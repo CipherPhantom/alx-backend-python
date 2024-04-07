@@ -19,16 +19,16 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch("client.get_json")
     def test_org(
         self,
-        org_name: str,
+        org: str,
         expected: Dict,
         mock_get_json: MagicMock
     ):
         """Testing the org method of GithubOrgClient class"""
         mock_get_json.return_value = expected
-        client = GithubOrgClient(org_name)
+        client = GithubOrgClient(org)
         result = client.org
         mock_get_json.assert_called_once_with(
-            client.ORG_URL.format(org=org_name)
+            client.ORG_URL.format(org=org)
         )
         self.assertEqual(result, expected)
 
