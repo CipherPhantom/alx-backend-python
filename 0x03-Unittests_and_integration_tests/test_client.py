@@ -3,7 +3,7 @@
 Test Module for the file client.py
 """
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
 from typing import Dict
@@ -31,6 +31,17 @@ class TestGithubOrgClient(unittest.TestCase):
             client.ORG_URL.format(org=org)
         )
         self.assertEqual(result, expected)
+
+    def test_public_repos_url(self):
+        """Testing the _public_repos_url method of GithubOrgClient class"""
+        with patch.object(
+            GithubOrgClient,
+            "org",
+            new_callable=PropertyMock
+        ) as mock_org:
+            mock_org.return_value = {"repos_url": "payload"}
+            client = GithubOrgClient("test")
+            self.assertEqual(client._public_repos_url, "payload")
 
 
 if __name__ == "__main__":
