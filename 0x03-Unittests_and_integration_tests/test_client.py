@@ -3,10 +3,11 @@
 Test Module for the file client.py
 """
 import unittest
-from unittest.mock import patch, MagicMock, PropertyMock
-from parameterized import parameterized
+from unittest.mock import patch, MagicMock, PropertyMock, Mock
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 from typing import Dict
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -71,6 +72,33 @@ class TestGithubOrgClient(unittest.TestCase):
         """Testing the has_license method of GithubOrgClient class"""
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
+
+
+@parameterized_class(
+    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
+    TEST_PAYLOAD
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Class for the Integration test for the class GithubOrgClient"""
+
+    @classmethod
+    def setUpClass(cls):
+        """Sets up class fixtures before running tests"""
+        def side_effect(url):
+            """side effect for the patch"""
+            if url == "https://api.github.com/orgs/google":
+                return Mock(**{'json.return_value': cls.org_payload})
+            elif url == "https://api.github.com/orgs/google/repos":
+                return Mock(**{'json.return_value': cls.repos_payload})
+            else:
+                raise ValueError("Unexpected URL: {}".format(url))
+        cls.get_patcher = patch("requests.get", side_effect=side_effect)
+        cls.get_patcher.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Removes class fixtures after running all tests"""
+        cls.get_patcher.stop()
 
 
 if __name__ == "__main__":
